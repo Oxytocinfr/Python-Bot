@@ -4,6 +4,14 @@ import json
 import requests
 import random
 import instaloader
+from dotenv import load_dotenv
+import os
+
+
+load_dotenv()
+
+
+TOKEN = os.getenv("DISCORD_TOKEN")
 
 intents = discord.Intents().all()
 client = commands.Bot(command_prefix=('-'), intents=intents,
