@@ -8,10 +8,16 @@ from dotenv import load_dotenv
 import os
 
 
-load_dotenv()
+env_file_path = ".env"
+
+if not os.path.isfile(env_file_path):
+    # Check /etc/secrets/.env if not found in the current directory
+    env_file_path = "/etc/secrets/.env"
+
+load_dotenv(env_file_path)
 
 
-TOKEN = os.getenv("DISCORD_TOKEN")
+TOKEN = os.getenv('DISCORD_TOKEN')
 
 intents = discord.Intents().all()
 client = commands.Bot(command_prefix=('-'), intents=intents,
@@ -397,4 +403,8 @@ async def ban(ctx, member: discord.Member, *, reason=None):
     await member.send(f"You have been banned from the server beacause {reason}")
 
 
-client.run(TOKEN)
+if TOKEN is None:
+    print("Bot token is not set. Please set the DISCORD_TOKEN environment variable.")
+else:
+    # Your bot code here
+    client.run(TOKEN)
