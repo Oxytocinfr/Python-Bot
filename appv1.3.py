@@ -389,4 +389,4 @@ async def ban(ctx, member: discord.Member, *, reason=None):
     await member.send(f"You have been banned from the server beacause {reason}")
 
 
-client.run("MTE5OTY3NDI1MzA4MDAwNjcwNg.Gv-Eno.ydWRy8LeF4UCUfsLxNBFauXNP6rdhQKg8xQrME")
+client.run(TOKEN)
