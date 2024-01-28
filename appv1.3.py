@@ -6,6 +6,8 @@ import random
 import instaloader
 from dotenv import load_dotenv
 import os
+from keep_alive import keep_alive
+
 
 
 env_file_path = ".env"
@@ -407,4 +409,5 @@ if TOKEN is None:
     print("Bot token is not set. Please set the DISCORD_TOKEN environment variable.")
 else:
     # Your bot code here
+    keep_alive()
     client.run(TOKEN)
