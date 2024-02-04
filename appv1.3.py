@@ -44,16 +44,21 @@ async def on_message(message):
     if message.author == client.user:
         return
     
-    if message.content.lower() in abusive_words:
-        await message.channel.send(random.choice(bot_abusive_words))
-        return
+    content_lower = message.content.lower()
+
+    # Check for abusive words
+    for word in abusive_words:
+        if word in content_lower:
+            await message.channel.send(random.choice(bot_abusive_words))
+            return
     
-    if message.content.lower() in welcoming_words:
-        await message.channel.send(random.choice(bot_welcoming_words))
-        return
+    # Check for welcoming words
+    for word in welcoming_words:
+        if word in content_lower:
+            await message.channel.send(random.choice(bot_welcoming_words))
+            return
 
     await client.process_commands(message)
-
 
 
 @client.event
