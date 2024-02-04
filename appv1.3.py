@@ -32,6 +32,29 @@ async def on_ready():
     await client.change_presence(activity=discord.Game(name="Your Mom"))
 
 
+abusive_words= ['chuda', 'gand', 'lund' , 'nigga', 'hoe' , 'lund', 'chut', 'chutiya', 'madarchod']
+bot_abusive_words = ['maa chuda', 'gand mara', 'fuck you', 'Bitch ass nigga', 'Ur moms a hoe', 'lund lega', 'Fuck ur mommy']
+
+welcoming_words = ['Hello', 'Hi']
+bot_welcoming_words = ['Hey There', 'Hello', 'Hii !! Nice to see you here..']
+
+
+@client.event
+async def on_message(message):
+    if message.author == client.user:
+        return
+    
+    if message.content.lower() in abusive_words:
+        await message.channel.send(random.choice(bot_abusive_words))
+        return
+    
+    if message.content.lower() in welcoming_words:
+        await message.channel.send(random.choice(bot_welcoming_words))
+        return
+
+    await client.process_commands(message)
+
+
 
 @client.event
 async def on_member_join(member):
