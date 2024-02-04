@@ -58,92 +58,56 @@ def get_quote():
     quote = json_data[0]['q'] + " -" + json_data[0]['a']
     return quote
 
+BASE_URL_WAIFU = 'https://api.waifu.im/search'
+TAGS_WAIFU = ['marin-kitagawa', 'waifu', 'maid', 'mori-calliope', 'raiden-shogun', 'oppai', 'selfies', 'uniform']
 
-def get_waifu(tag=None):
-    base_url = 'https://api.waifu.im/search/'
-    base_url_all = ['https://api.waifu.im/search',
-                    'https://api.waifu.im/search/?included_tags=marin-kitagawa',
-                    'https://api.waifu.im/search/?included_tags=waifu',
-                    'https://api.waifu.im/search/?included_tags=maid',
-                    'https://api.waifu.im/search/?included_tags=mori-calliope',
-                    'https://api.waifu.im/search/?included_tags=raiden-shogun',
-                    'https://api.waifu.im/search/?included_tags=oppai',
-                    'https://api.waifu.im/search/?included_tags=selfies',
-                    'https://api.waifu.im/search/?included_tags=uniform']
-    if tag:
-        url = f"{base_url}?included_tags={tag}&nsfw=false"
-    else:
-        url = random.choice(base_url_all)
+def get_waifu(tag=None, previous_results=None):
+    if not tag:
+        tag = random.choice(TAGS_WAIFU)
+    
+    url = f"{BASE_URL_WAIFU}/?included_tags={tag}"
+    
     response_data = requests.get(url)
     json_data = response_data.json()
-
-    if "detail" in json_data and json_data['detail']:
-        return json_data['detail']
+    
+    if 'images' in json_data and json_data['images']:
+        images = [img['url'] for img in json_data['images'] if img['url'] not in previous_results]
+        return images
     else:
-        image = json_data['images'][0]['url']
-        return image
-
-# Old Random
-
-# def get_waifu_hentai():
-#     url = ['https://api.waifu.im/search/?is_nsfw=true&gif=true',
-#            'https://api.waifu.im/search/?is_nsfw=true',
-#            'https://api.waifu.im/search/?included_tags=ass',
-#            'https://api.waifu.im/search/?included_tags=hentai',
-#            'https://api.waifu.im/search/?included_tags=milf',
-#            'https://api.waifu.im/search/?included_tags=oral',
-#            'https://api.waifu.im/search/?included_tags=paizuri',
-#            'https://api.waifu.im/search/?included_tags=ecchi',
-#            'https://api.waifu.im/search/?included_tags=ero']
-#     hentai = random.choice(url)
-#     response_data = requests.get(hentai)
-#     json_data = response_data.json()
-#     image = json_data['images'][0]['url']
-#     return image
-
-# Complete random mk1
+        return None
 
 
 BASE_URL = 'https://api.waifu.im/search'
 TAGS = ['ass', 'hentai', 'milf', 'oral', 'paizuri', 'ecchi', 'ero']
 
-
-def get_waifu_hentai():
-    tag = random.choice(TAGS)
-    url_no_gif = f"{BASE_URL}/?included_tags={tag}&is_nsfw=true"
-    url_gif = f"{BASE_URL}/?included_tags={tag}&is_nsfw=true&gif=true"
-    urls = [url_no_gif, url_gif]
-    url = random.choice(urls)
+def get_waifu_hentai(tag=None, gif=False, previous_results=None):
+    if not tag:
+        tag = random.choice(TAGS)
+    
+    url = f"{BASE_URL}/?included_tags={tag}&is_nsfw=true"
+    
+    if gif:
+        url += "&gif=true"
+    
     response_data = requests.get(url)
     json_data = response_data.json()
-    image = json_data['images'][0]['url']
-    return image
+    
+    if 'images' in json_data and json_data['images']:
+        images = [img['url'] for img in json_data['images'] if img['url'] not in previous_results]
+        return images
+    else:
+        return None
 
-# Random mk2
-
-# def get_waifu_hentai(tag=None, is_gif=None):
-#     base_url = 'https://api.waifu.im/search/'
-#     tag_list = ['ass', 'hentai', 'milf', 'oral', 'paizuri', 'ecchi', 'ero']
-
-#     if tag:
-#         url_tag = random.choice(tag_list) if tag == 'random' else tag
-#         url = f"{base_url}?included_tags={url_tag}"
-#     else:
-#         url_tag = random.choice(tag_list)
-#         url = f"{base_url}?included_tags={url_tag}"
-
-#     if is_gif is not None:
-#         url += '&gif=true' if is_gif else ''
-
-#     response_data = requests.get(url)
-#     json_data = response_data.json()
-
-#     if not json_data['images']:
-#         return 'error'
-
-#     image_url = random.choice(json_data['images'])['url']
-
-#     return image_url
+def get_normal_hentai(tag):
+    url = f"{BASE_URL}/?included_tags={tag}&is_nsfw=true"
+    response_data = requests.get(url)
+    json_data = response_data.json()
+    
+    if 'images' in json_data and json_data['images']:
+        image = json_data['images'][0]['url']
+        return [image]
+    else:
+        return None
 
 # Commands
 
@@ -262,57 +226,73 @@ async def weather(ctx, location: str):
     await ctx.send(embed=embed)
 
 
+
 @client.command()
-async def waifu(ctx, tag=None):
+async def waifu(ctx, tag=None, count: int = 1):
     """
     Waifu.
+    :param tag: Specify a tag for waifu content (optional).
+    :param count: Number of waifu images to display (default is 1) and the maximum no of images which have been set is 10 at a time.
+    usecase = -waifu maid 5
+    waifu [tag] [no of img]
+    TAGS = marin-kitagawa, waifu, maid, mori-calliope, raiden-shogun, oppai, selfies, uniform
     """
-    waifu = get_waifu(tag)
-    if 'error' in waifu or 'bad' in waifu:
-        embed = discord.Embed(title=waifu)
-        await ctx.send(embed=embed)
-    elif waifu.startswith('http'):
-        embed = discord.Embed()
-        embed.set_image(url=waifu)
-        await ctx.send(embed=embed)
-    else:
-        embed = discord.Embed(title=waifu)
-        await ctx.send(embed=embed)
-
+    MAX_IMAGES = 4  # Maximum number of images allowed
+    
+    previous_results = set()
+    
+    # Limit the count to the maximum allowed value
+    count = min(count, MAX_IMAGES)
+    
+    for _ in range(count):
+        waifu_images = get_waifu(tag, previous_results)
+        
+        if waifu_images:
+            for image_url in waifu_images:
+                previous_results.add(image_url)
+                embed = discord.Embed()
+                embed.set_image(url=image_url)
+                await ctx.send(embed=embed)
+        else:
+            await ctx.send(f"No waifu images found for the specified tag: {tag}")
 
 @client.command()
-async def hentai(ctx):
+async def hentai(ctx, tag=None, gif: bool = False, count: int = 1):
     """
-      Hentai (¬‿¬).
+    Hentai (¬‿¬).
+    :param tag: Specify a tag for hentai content (optional).
+    :param gif: Include GIFs in the response (default is False).
+    :param count: Number of hentai images to display (default is 1) and the maximum no of images which have been set is 10 at a time.
+    usecase = -hentai ass True 5
+    hentai [tag] [True/False] [no of img]
+    TAGS = ass, oral, hentai, ecchi, ero, paizuri, milf
     """
+    MAX_IMAGES = 10  # Maximum number of images allowed
+    
     if ctx.channel.is_nsfw():
-        hentai = get_waifu_hentai()
-        embed = discord.Embed(color=0x351C75)
-        embed.set_image(url=hentai)
-        await ctx.send(embed=embed)
+        previous_results = set()
+        
+        # Limit the count to the maximum allowed value
+        count = min(count, MAX_IMAGES)
+        
+        for _ in range(count):
+            hentai = get_waifu_hentai(tag, gif, previous_results)
+            
+            # If no results, try getting a normal hentai image
+            if not hentai:
+                hentai = get_normal_hentai(tag)
+            
+            if hentai:
+                for image_url in hentai:
+                    previous_results.add(image_url)
+                    embed = discord.Embed(color=0x351C75)
+                    embed.set_image(url=image_url)
+                    await ctx.send(embed=embed)
+            else:
+                await ctx.send(f"No hentai found for the specified tag: {tag}")
     else:
         embed = discord.Embed(title="NSFW Channel Only", color=0xFF0000)
         await ctx.send(embed=embed)
-
-# @client.command()
-# async def hentai(ctx, tag='random', is_gif=False):
-#     """
-#     hentai.
-#     """
-#     image_url = get_waifu_hentai(tag, is_gif)
-
-#     if image_url == 'error':
-#         embed = discord.Embed(description='No results found.')
-#     elif is_gif:
-#         embed = discord.Embed()
-#         embed.set_image(url=image_url)
-#     else:
-#         embed = discord.Embed(title=f"{tag.capitalize()} waifu")
-#         embed.set_image(url=image_url)
-
-#     await ctx.send(embed=embed)
-
-
 # Socials
 
 @client.command()
