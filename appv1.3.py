@@ -214,23 +214,45 @@ async def meals(ctx, dish):
         await ctx.send(embed=embed)
 
 
+
 @client.command()
-async def meme(ctx):
+async def meme(ctx, meme_type="random"):
     """
-      Memes to have a laugh.
+    Get memes for a laugh.
+    
+    Parameters:
+      - meme_type: Type of meme (random, wholesome, memes, dankmemes, me_irl, DarkMemesPh)
     """
-    link = ["https://meme-api.com/gimme",
-            'https://meme-api.com/gimme/wholesomememes',
-            'https://meme-api.com/gimme/memes',
-            'https://meme-api.com/gimme/dankmemes',
-            'https://meme-api.com/gimme/me_irl']
-    url = random.choice(link)
+    meme_types = {
+        "random": "https://meme-api.com/gimme",
+        "wholesome": "https://meme-api.com/gimme/wholesomememes",
+        "memes": "https://meme-api.com/gimme/memes",
+        "dankmemes": "https://meme-api.com/gimme/dankmemes",
+        "me_irl": "https://meme-api.com/gimme/me_irl",
+        "darkmemesph": "https://meme-api.com/gimme/DarkMemesPh",  # Changed key to lowercase
+    }
+
+    meme_type_lower = meme_type.lower()
+
+    if meme_type_lower == 'help':
+        await ctx.send("Available types: random, wholesome, memes, dankmemes, me_irl, DarkMemesPh")
+        return
+    elif meme_type_lower not in meme_types:
+        await ctx.send("Invalid meme type. Available types: random, wholesome, memes, dankmemes, me_irl, DarkMemesPh")
+        return
+
+    url = meme_types[meme_type_lower]
     response = requests.get(url)
+
+    if response.status_code != 200:
+        await ctx.send("Failed to fetch meme. Try again later.")
+        return
+
     data = response.json()
     embed = discord.Embed(color=0x351C75)
     embed.set_image(url=data["url"])
     await ctx.send(embed=embed)
-
+    
 
 @client.command()
 async def weather(ctx, location: str):
