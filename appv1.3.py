@@ -32,7 +32,7 @@ async def on_ready():
     await client.change_presence(activity=discord.Game(name="Your Mom"))
 
 
-abusive_words= ['chuda', 'gand', 'lund' , 'nigga', 'hoe' , 'lund', 'chut', 'chutiya', 'madarchod']
+abusive_words= ['chuda', 'gand', 'lund' , 'nigga', 'hoe' , 'lund', 'chut', 'chutiya', 'madarchod', 'lode']
 bot_abusive_words = ['maa chuda', 'gand mara', 'fuck you', 'Bitch ass nigga', 'Ur moms a hoe', 'lund lega', 'Fuck ur mommy']
 
 welcoming_words = ['Hello', 'Hi']
